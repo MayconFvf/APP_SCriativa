@@ -34,6 +34,7 @@ type PublicArtModel = {
   categoria: string | null;
   descricao: string | null;
   imagem_url: string | null;
+  valor_extra: number | null;
 };
 
 type StepKey =
@@ -66,7 +67,7 @@ const medidaFrenteOptions = ["10 x 10 cm", "20 x 28 cm", "28 x 35 cm", "Personal
 const medidaCostasOptions = ["10 x 10 cm", "25 x 30 cm", "30 x 40 cm", "Personalizada"];
 const medidaMangaOptions = ["6 x 6 cm", "8 x 10 cm", "10 x 12 cm", "Personalizada"];
 const yesNoOptions = ["Sim", "Não"];
-const deliveryOptions = ["Receber em casa", "Retirada", "Não"];
+const deliveryOptions = ["Receber em casa", "Retirada", "Combinar"];
 
 function normalizeText(value?: string | null) {
   return (value ?? "")
@@ -74,6 +75,15 @@ function normalizeText(value?: string | null) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function formatCurrency(value: number | string | null | undefined) {
+  const numericValue = typeof value === "string" ? Number(value) : value;
+
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  }).format(Number.isFinite(numericValue ?? 0) ? Number(numericValue ?? 0) : 0);
 }
 
 function pruneIncompatibleAnswers(answers: BudgetAnswers) {
@@ -109,6 +119,15 @@ function pruneIncompatibleAnswers(answers: BudgetAnswers) {
 function wantsDelivery(answers: BudgetAnswers) {
   const delivery = normalizeText(answers.frete);
   return delivery === "sim" || delivery === "receber em casa";
+}
+
+function isDeliveryToArrange(answers: BudgetAnswers) {
+  return normalizeText(answers.frete) === "combinar";
+}
+
+function getDeliverySummaryText(answers: BudgetAnswers) {
+  if (isDeliveryToArrange(answers)) return "Entrega a combinar";
+  return `Entrega: ${answers.frete || "a confirmar"}`;
 }
 
 function hasRequiredAddress(answers: BudgetAnswers) {
@@ -162,7 +181,7 @@ function getPublicSummary(answers: BudgetAnswers) {
     quantidade: answers.quantidade || "0",
     resumo:
       `${answers.produto || "Produto"} ${answers.faixa || ""}, tecido ${answers.tecido || "a confirmar"}, cor ${answers.cor || "a confirmar"}, tamanho ${answers.tamanho || "a confirmar"}. ` +
-      `Estampas: ${estampas || "sem estampa informada"}. Arte: ${arte}. Entrega: ${answers.frete || "a confirmar"}.` +
+      `Estampas: ${estampas || "sem estampa informada"}. Arte: ${arte}. ${getDeliverySummaryText(answers)}.` +
       `${formatDeliveryAddress(answers) ? ` Endereço: ${formatDeliveryAddress(answers)}.` : ""}`
   };
 }
@@ -214,7 +233,7 @@ export function BudgetPage() {
               .order("nome", { ascending: true }),
             supabase
               .from("artes_modelos")
-              .select("id,nome,categoria,descricao,imagem_url")
+              .select("id,nome,categoria,descricao,imagem_url,valor_extra")
               .eq("ativo", true)
               .order("nome", { ascending: true })
           ]);
@@ -680,7 +699,7 @@ export function BudgetPage() {
                       <div className="grid gap-3 sm:grid-cols-2">
                         {[
                           ["arte_pronta", "Tenho arte pronta"],
-                          ["modelo_pronto", "Escolher modelo pronto"],
+                          ["modelo_pronto", "Quero escolher um modelo pronto"],
                           ["criacao", "Preciso de criação"],
                           ["vetorizacao", "Preciso de vetorização"],
                           ["analise_manual", "Ainda não sei"]
@@ -698,7 +717,7 @@ export function BudgetPage() {
 
                       {answers.arteFluxo === "modelo_pronto" && (
                         <div className="grid gap-3">
-                          <p className="text-sm font-bold text-white/[0.62]">Artes prontas ativas</p>
+                          <p className="text-sm font-bold text-white/[0.62]">Galeria de artes prontas</p>
                           {artModels.length === 0 && (
                             <p className="rounded-lg border border-white/10 bg-white/[0.06] p-4 text-sm font-bold text-white/[0.58]">
                               Nenhum modelo ativo encontrado. A SCRIATIVA pode analisar manualmente.
@@ -715,17 +734,24 @@ export function BudgetPage() {
                                 ].join(" ")}
                                 onClick={() => selectArtModel(artModel)}
                               >
-                                {artModel.imagem_url && (
+                                {artModel.imagem_url ? (
                                   <img
                                     src={artModel.imagem_url}
-                                    alt=""
-                                    className="h-32 w-full object-cover"
+                                    alt={`Modelo pronto ${artModel.nome}`}
+                                    className="h-40 w-full object-cover sm:h-36"
                                   />
+                                ) : (
+                                  <span className="grid h-40 w-full place-items-center bg-black/25 text-sm font-black text-white/[0.42] sm:h-36">
+                                    Sem imagem
+                                  </span>
                                 )}
-                                <span className="block p-4">
-                                  <span className="block">{artModel.nome}</span>
-                                  <span className="mt-1 block text-xs font-bold text-white/[0.46]">
-                                    {artModel.categoria ?? artModel.descricao ?? "Modelo pronto"}
+                                <span className="block p-4 text-left">
+                                  <span className="block text-base font-black">{artModel.nome}</span>
+                                  <span className="mt-1 block text-xs font-bold text-white/[0.5]">
+                                    {artModel.categoria ?? "Modelo pronto"}
+                                  </span>
+                                  <span className="mt-2 block text-sm font-black text-aqua">
+                                    {formatCurrency(artModel.valor_extra)}
                                   </span>
                                 </span>
                               </button>
@@ -1041,10 +1067,10 @@ function summaryRows(answers: BudgetAnswers, summary: ReturnType<typeof getPubli
           .join(" · ") || "Sem estampa informada"
     },
     { label: "Arte", value: answers.arteModeloNome || answers.arteOpcao || "A confirmar" },
-    { label: "Tipo de entrega", value: `${answers.frete || "-"} · prazo ${answers.prazo || "-"}` },
+    { label: "Tipo de entrega", value: `${getDeliverySummaryText(answers)} · prazo ${answers.prazo || "-"}` },
     {
       label: "Endereço",
-      value: formatDeliveryAddress(answers) || "Não informado para retirada ou sem entrega"
+      value: formatDeliveryAddress(answers) || "Não informado para retirada ou entrega a combinar"
     },
     { label: "Resumo do pedido", value: summary.resumo }
   ];

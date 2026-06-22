@@ -54,7 +54,9 @@ export function CustomerSignupPage() {
     }
 
     if (!acceptedTerms) {
-      setErrorMessage("Você precisa aceitar os termos de responsabilidade.");
+      setErrorMessage(
+        "Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar."
+      );
       return;
     }
 
@@ -77,7 +79,9 @@ export function CustomerSignupPage() {
     }
 
     if (result.needsConfirmation) {
-      setMessage("Cadastro criado. Confira seu e-mail para confirmar o acesso.");
+      setMessage(
+        "Enviamos um e-mail de confirmação. Clique no link recebido para ativar sua conta e acessar seus pedidos."
+      );
       return;
     }
 
@@ -146,15 +150,31 @@ export function CustomerSignupPage() {
             />
           </label>
 
-          <label className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.06] p-4 text-sm font-bold text-white/[0.72]">
-            <input
-              className="mt-1 h-4 w-4 accent-magenta"
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(event) => setAcceptedTerms(event.target.checked)}
-            />
-            <span>Li e aceito os termos de responsabilidade.</span>
-          </label>
+          <p className="rounded-lg border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-bold leading-6 text-white/[0.62]">
+            Ao criar sua conta, você está solicitando acesso à área do cliente SCRIATIVA,
+            plataforma desenvolvida pela My Dev Solutions para acompanhamento de orçamentos
+            e pedidos personalizados.
+          </p>
+
+          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
+            <label className="flex items-start gap-3 text-sm font-bold text-white/[0.72]">
+              <input
+                className="mt-1 h-4 w-4 accent-magenta"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(event) => setAcceptedTerms(event.target.checked)}
+              />
+              <span>Li e aceito os Termos de Uso e a Política de Privacidade.</span>
+            </label>
+            <div className="mt-3 flex flex-col gap-2 text-sm font-black sm:flex-row sm:items-center sm:gap-4">
+              <Link className="text-aqua hover:text-white" to="/termos">
+                Ler Termos de Uso
+              </Link>
+              <Link className="text-aqua hover:text-white" to="/privacidade">
+                Ler Política de Privacidade
+              </Link>
+            </div>
+          </div>
 
           <label className="grid gap-2 text-sm font-bold text-white/70">
             Captcha visual: quanto é 3 + 4?
@@ -192,6 +212,12 @@ export function CustomerSignupPage() {
           Já tem conta?{" "}
           <Link className="text-aqua hover:text-white" to="/cliente/login">
             Fazer login
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-sm font-bold text-white/[0.48]">
+          Não recebeu o e-mail?{" "}
+          <Link className="text-aqua hover:text-white" to="/cliente/reenviar-confirmacao">
+            Reenviar confirmação
           </Link>
         </p>
       </section>

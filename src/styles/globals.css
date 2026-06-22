@@ -68,7 +68,7 @@ a {
 
 @layer base {
   body {
-    @apply bg-ink text-paper;
+    @apply bg-slate-950 text-slate-50;
   }
 }
 
@@ -89,15 +89,15 @@ a {
   }
 
   .btn-primary {
-    @apply inline-flex min-h-12 max-w-full items-center justify-center gap-2 whitespace-normal rounded-lg bg-gradient-to-r from-coral via-magenta to-violet px-5 py-3 text-center text-sm font-black leading-tight text-white shadow-neon transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-magenta/25 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-12 max-w-full items-center justify-center gap-2 whitespace-normal rounded-lg bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 px-5 py-3 text-center text-sm font-black leading-tight text-white shadow-lg transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-pink-500/25 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-12 max-w-full items-center justify-center gap-2 whitespace-normal rounded-lg border border-white/10 bg-white/[0.08] px-5 py-3 text-center text-sm font-bold leading-tight text-white shadow-line transition hover:-translate-y-0.5 hover:border-aqua/40 hover:bg-white/[0.12] focus:outline-none focus:ring-4 focus:ring-aqua/20;
+    @apply inline-flex min-h-12 max-w-full items-center justify-center gap-2 whitespace-normal rounded-lg border border-white/10 bg-white/[0.08] px-5 py-3 text-center text-sm font-bold leading-tight text-white shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-400/40 hover:bg-white/[0.12] focus:outline-none focus:ring-4 focus:ring-cyan-400/20;
   }
 
   .field {
-    @apply min-h-12 w-full max-w-full rounded-lg border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/[0.35] focus:border-aqua focus:ring-4 focus:ring-aqua/[0.15];
+    @apply min-h-12 w-full max-w-full rounded-lg border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/[0.35] focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/[0.15];
   }
 
   .section-shell {
@@ -105,11 +105,11 @@ a {
   }
 
   .glass-panel {
-    @apply min-w-0 rounded-lg border border-white/10 bg-white/[0.075] shadow-soft backdrop-blur-xl;
+    @apply min-w-0 rounded-lg border border-white/10 bg-white/[0.075] shadow-xl backdrop-blur-xl;
   }
 
   .neon-card {
-    @apply min-w-0 rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.13] to-white/[0.045] shadow-neon backdrop-blur-xl;
+    @apply min-w-0 rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.13] to-white/[0.045] shadow-xl backdrop-blur-xl;
   }
 
   .admin-surface {

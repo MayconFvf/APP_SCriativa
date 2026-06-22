@@ -97,7 +97,7 @@ async function getProfileForUser(user: User) {
 async function ensureClienteRecord(user: User, nome: string, email: string) {
   if (!supabase) return;
 
-  await supabase
+  const { error } = await supabase
     .from("clientes")
     .upsert(
       {
@@ -108,6 +108,10 @@ async function ensureClienteRecord(user: User, nome: string, email: string) {
       },
       { onConflict: "email" }
     );
+
+  if (error) {
+    console.error("Erro ao criar/atualizar cliente após cadastro:", error);
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -230,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: payload.email,
         password: payload.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             nome: payload.nome,
             role: "cliente"
@@ -241,9 +246,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: getFriendlyAuthError(error.message) };
       }
 
+      if (data.user) {
+        await ensureClienteRecord(data.user, payload.nome, payload.email);
+      }
+
       if (data.session && data.user) {
         setSession(data.session);
-        await ensureClienteRecord(data.user, payload.nome, payload.email);
         const loadedProfile = await loadProfile(data.user);
         return { error: null, role: loadedProfile?.role ?? "cliente" };
       }

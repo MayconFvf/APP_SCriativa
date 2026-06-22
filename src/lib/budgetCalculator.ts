@@ -493,6 +493,10 @@ function wantsDelivery(answers: BudgetAnswers) {
   return delivery === "sim" || delivery === "receber em casa";
 }
 
+function isDeliveryToArrange(answers: BudgetAnswers) {
+  return normalizeText(answers.frete) === "combinar";
+}
+
 function formatDeliveryAddress(answers: BudgetAnswers) {
   if (!wantsDelivery(answers)) return "";
 
@@ -591,11 +595,14 @@ export async function calculatePublicBudget(
   }));
   const artCost = calculateArtCost(config, answers, selectedArtModel);
   const custoArte = artCost.total;
-  const custoFrete = roundMoney(
-    config.frete_dtf_padrao +
-      config.frete_peca_padrao * quantidade +
-      (wantsDelivery(answers) ? config.frete_cliente_padrao : 0)
-  );
+  const entregaACombinar = isDeliveryToArrange(answers);
+  const custoFrete = entregaACombinar
+    ? 0
+    : roundMoney(
+        config.frete_dtf_padrao +
+          config.frete_peca_padrao * quantidade +
+          (wantsDelivery(answers) ? config.frete_cliente_padrao : 0)
+      );
   const taxaUrgencia =
     answers.margemLucro === "Premium" || answers.prazo === "Urgente" ? config.taxa_urgencia : 0;
   const custoSemTaxaCartao = roundMoney(
@@ -687,9 +694,11 @@ export async function calculatePublicBudget(
           : null
       },
       fretes: {
-        frete_dtf_padrao: config.frete_dtf_padrao,
-        frete_peca_padrao_total: roundMoney(config.frete_peca_padrao * quantidade),
-        frete_cliente_padrao: wantsDelivery(answers) ? config.frete_cliente_padrao : 0
+        frete_dtf_padrao: entregaACombinar ? 0 : config.frete_dtf_padrao,
+        frete_peca_padrao_total: entregaACombinar
+          ? 0
+          : roundMoney(config.frete_peca_padrao * quantidade),
+        frete_cliente_padrao: !entregaACombinar && wantsDelivery(answers) ? config.frete_cliente_padrao : 0
       },
       taxas: {
         embalagem: config.taxa_embalagem,

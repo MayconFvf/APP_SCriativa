@@ -61,6 +61,10 @@ function wantsDelivery(answers?: Record<string, string>) {
   return delivery === "sim" || delivery === "receber em casa";
 }
 
+function formatDeliveryForMessage(value?: string | null) {
+  return normalizeText(value) === "combinar" ? "A combinar" : value || "Não informado";
+}
+
 function formatDeliveryAddress(answers?: Record<string, string>) {
   if (!wantsDelivery(answers)) return "";
 
@@ -108,12 +112,19 @@ function buildWhatsAppLink(params: {
     `Valor final: ${params.precoFinal}`,
     `Status: ${params.status}`,
     "",
-    "Entrega:",
-    `Tipo: ${params.entrega}`,
+    `Entrega: ${formatDeliveryForMessage(params.entrega)}`,
     `Endereço: ${params.endereco || "Não se aplica"}`
   ].join("\n");
 
-  return `https://wa.me/${SCRIATIVA_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  const link = `https://wa.me/${SCRIATIVA_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+  console.log("Debug WhatsApp SCRIATIVA - link gerado:", {
+    numero: SCRIATIVA_WHATSAPP_NUMBER,
+    link,
+    mensagem: message
+  });
+
+  return link;
 }
 
 export function ResultPage() {
@@ -139,20 +150,30 @@ export function ResultPage() {
   const emailCliente = profile?.email ?? result?.answers?.email ?? user?.email ?? "Não informado";
   const entrega = result?.answers?.frete ?? "Não informado";
   const enderecoEntrega = formatDeliveryAddress(result?.answers);
-  const whatsappLink = buildWhatsAppLink({
-    nome: nomeCliente,
-    email: emailCliente,
-    produto,
-    quantidade,
-    resumo,
-    precoFinal,
-    status: "novo",
-    entrega,
-    endereco: enderecoEntrega
-  });
+  const whatsappLink = useMemo(
+    () =>
+      buildWhatsAppLink({
+        nome: nomeCliente,
+        email: emailCliente,
+        produto,
+        quantidade,
+        resumo,
+        precoFinal,
+        status: "novo",
+        entrega,
+        endereco: enderecoEntrega
+      }),
+    [emailCliente, enderecoEntrega, entrega, nomeCliente, precoFinal, produto, quantidade, resumo]
+  );
 
   const saveRequestedBudget = useCallback(async () => {
     if (!supabase || !session || role !== "cliente" || !profile?.cliente_id || !user) {
+      console.log("Debug WhatsApp SCRIATIVA - solicitação exige login/cadastro antes do envio.", {
+        temSupabase: Boolean(supabase),
+        temSessao: Boolean(session),
+        role,
+        temClienteId: Boolean(profile?.cliente_id)
+      });
       setMessage("Entre ou crie uma conta para solicitar este orçamento.");
       localStorage.setItem(PENDING_BUDGET_REQUEST_KEY, "true");
       navigate("/cliente/cadastro", { replace: false });
@@ -172,7 +193,11 @@ export function ResultPage() {
 
     if (localStorage.getItem(LAST_SAVED_BUDGET_KEY) === signature) {
       setRequestStatus("saved");
-      setMessage("Este orçamento já foi solicitado e está salvo na sua conta.");
+      setMessage("Seu orçamento está pronto para envio no WhatsApp.");
+      console.log("Debug WhatsApp SCRIATIVA - orçamento já salvo, botão de WhatsApp liberado.", {
+        numero: SCRIATIVA_WHATSAPP_NUMBER,
+        whatsappLink
+      });
       localStorage.removeItem(PENDING_BUDGET_REQUEST_KEY);
       return;
     }
@@ -207,6 +232,7 @@ export function ResultPage() {
     });
 
     if (error) {
+      console.log("Debug WhatsApp SCRIATIVA - erro ao salvar orçamento antes do envio:", error);
       setRequestStatus("error");
       setMessage("Não foi possível salvar o pedido agora. Tente novamente em instantes.");
       return;
@@ -215,7 +241,14 @@ export function ResultPage() {
     localStorage.setItem(LAST_SAVED_BUDGET_KEY, signature);
     localStorage.removeItem(PENDING_BUDGET_REQUEST_KEY);
     setRequestStatus("saved");
-    setMessage("Orçamento solicitado com sucesso e salvo na sua conta.");
+    setMessage("Seu orçamento está pronto para envio no WhatsApp.");
+    console.log("Debug WhatsApp SCRIATIVA - orçamento salvo e pronto para envio no WhatsApp.", {
+      numero: SCRIATIVA_WHATSAPP_NUMBER,
+      whatsappLink,
+      produto,
+      quantidade,
+      precoFinal
+    });
   }, [
     navigate,
     precoFinal,
@@ -238,6 +271,7 @@ export function ResultPage() {
     resumo,
     role,
     session,
+    whatsappLink,
     user
   ]);
 
@@ -332,11 +366,17 @@ export function ResultPage() {
               <a
                 className="btn-primary mt-6 w-full"
                 href={whatsappLink}
+                onClick={() =>
+                  console.log("Debug WhatsApp SCRIATIVA - clique no botão de envio:", {
+                    numero: SCRIATIVA_WHATSAPP_NUMBER,
+                    whatsappLink
+                  })
+                }
                 rel="noreferrer"
                 target="_blank"
               >
                 <MessageCircle size={18} aria-hidden="true" />
-                Enviar resumo para SCRIATIVA no WhatsApp
+                Enviar orçamento para SCRIATIVA
               </a>
             )}
 

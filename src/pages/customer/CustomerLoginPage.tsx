@@ -148,6 +148,12 @@ export function CustomerLoginPage() {
             Criar cadastro
           </Link>
         </p>
+        <p className="mt-3 text-center text-sm font-bold text-white/[0.48]">
+          Não recebeu ou perdeu o e-mail?{" "}
+          <Link className="text-aqua hover:text-white" to="/cliente/reenviar-confirmacao">
+            Reenviar confirmação
+          </Link>
+        </p>
       </section>
     </main>
   );

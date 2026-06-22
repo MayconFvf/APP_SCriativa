@@ -4,6 +4,7 @@ import { AdminLayout } from "./components/layout/AdminLayout";
 import { CustomerLayout } from "./components/layout/CustomerLayout";
 import { PublicLayout } from "./components/layout/PublicLayout";
 import { AppErrorBoundary } from "./components/ui/AppErrorBoundary";
+import { AuthCallbackPage } from "./pages/auth/AuthCallbackPage";
 import { AdminArtPage } from "./pages/admin/AdminArtPage";
 import { AdminBudgetListPage } from "./pages/admin/AdminBudgetListPage";
 import { AdminClientsPage } from "./pages/admin/AdminClientsPage";
@@ -17,10 +18,13 @@ import { AdminSettingsPage } from "./pages/admin/AdminSettingsPage";
 import { CustomerDashboardPage } from "./pages/customer/CustomerDashboardPage";
 import { CustomerLoginPage } from "./pages/customer/CustomerLoginPage";
 import { CustomerOrdersPage } from "./pages/customer/CustomerOrdersPage";
+import { CustomerResendConfirmationPage } from "./pages/customer/CustomerResendConfirmationPage";
 import { CustomerSignupPage } from "./pages/customer/CustomerSignupPage";
 import { BudgetPage } from "./pages/public/BudgetPage";
 import { HomePage } from "./pages/public/HomePage";
+import { PrivacyPage } from "./pages/public/PrivacyPage";
 import { ResultPage } from "./pages/public/ResultPage";
+import { TermsPage } from "./pages/public/TermsPage";
 
 export default function App() {
   return (
@@ -30,11 +34,15 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/orcamento" element={<BudgetPage />} />
           <Route path="/resultado" element={<ResultPage />} />
+          <Route path="/termos" element={<TermsPage />} />
+          <Route path="/privacidade" element={<PrivacyPage />} />
         </Route>
 
         <Route path="/gestao-scriativa" element={<AdminLoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/cliente/login" element={<CustomerLoginPage />} />
         <Route path="/cliente/cadastro" element={<CustomerSignupPage />} />
+        <Route path="/cliente/reenviar-confirmacao" element={<CustomerResendConfirmationPage />} />
 
         <Route element={<ProtectedRoute allowedRoles={["cliente"]} redirectTo="/cliente/login" />}>
           <Route path="/cliente" element={<CustomerLayout />}>

@@ -8,6 +8,7 @@ Depois de rodar o schema principal, rode também as migrations complementares:
 supabase/update_cliente_pedidos.sql
 supabase/update_calculo_orcamento_publico.sql
 supabase/fix_public_budget_rls.sql
+supabase/update_artes_storage.sql
 ```
 
 ## Como rodar
@@ -30,6 +31,7 @@ supabase/fix_public_budget_rls.sql
 - Inserção pública em `clientes` e `orcamentos`.
 - Cliente autenticado lê apenas o próprio cadastro e os próprios orçamentos.
 - Admin autenticado administra clientes, orçamentos, catálogo, serviços, artes, fornecedores e configurações.
+- Bucket público `artes-modelos` no Supabase Storage para imagens das artes prontas.
 
 ## Rotas de autenticação
 
